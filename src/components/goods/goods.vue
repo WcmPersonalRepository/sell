@@ -2,7 +2,8 @@
   <div id='goods'>
     <div class="menu-wrapper" ref="menuWrapper">
       <ul v-if="goods" class="menus">
-        <li v-for="(item,index) in goods" class="menu-item border-1px" :class="{current:calculateIndex==index }">
+        <li v-for="(item,index) in goods" @click="selectMenu(index,$event)" class="menu-item border-1px"
+            :class="{current:calculateIndex==index }">
           <span class="text"><supports v-if="item.type>-1" :index="2" :type="item.type" class="icon"></supports>{{item.name}}</span>
         </li>
       </ul>
@@ -75,7 +76,9 @@
     },
     methods: {
       _initScroll: function () {
-        this.menuScroll = new BScroll(this.$refs.menuWrapper, {})
+        this.menuScroll = new BScroll(this.$refs.menuWrapper, {
+          click: true
+        })
         this.foodScroll = new BScroll(this.$refs.foodsWrapper, {
           probeType: 3
         })
@@ -86,12 +89,19 @@
       _calculateListHeight: function () {
         let foodsItem = this.$refs.foodsWrapper.getElementsByClassName('foods-item')
         let height = 0
-        console.log(this.heightArr)
         this.heightArr.push(height)
         for (let i = 0; i < foodsItem.length; i++) {
           height += foodsItem[i].clientHeight
           this.heightArr.push(height)
         }
+      },
+      selectMenu: function (index, event) {
+        if (!event._constructed) {
+          return
+        }
+        let foodsItem = this.$refs.foodsWrapper.getElementsByClassName('foods-item')
+        let el = foodsItem[index]
+        this.foodScroll.scrollToElement(el, 300)
       }
     },
     components: {
@@ -127,6 +137,7 @@
           border-1px-bottom(rgba(7, 17, 27, .1))
           &.current
             font-weight 700
+            border-left 2px solid dodgerblue
             margin-top -1px
             background-color #fff
             border-none()
