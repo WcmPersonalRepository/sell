@@ -28,24 +28,34 @@
                 <span class="now-price">￥{{food.price}}</span><span v-if="food.oldPrice" class="old-price">￥{{food.oldPrice}}</span>
               </div>
             </div>
+            <div class="control-wrapper">
+              <cartcontrol :food="food"></cartcontrol>
+            </div>
           </div>
         </li>
       </ul>
     </div>
+    <shopcart :selectFoods="selectFoods" :min-price="seller.minPrice" :delivery-price="seller.deliveryPrice"></shopcart>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import supports from '../supports/supports.vue'
   import BScroll from 'better-scroll'
+  import shopcart from '../shopcart/shopcart.vue'
+  import cartcontrol from '../cartcontrol/cartcontrol.vue'
 
   const EERO_OK = '0'
   export default {
     name: 'goods',
+    props: {
+      seller: {
+        type: Object
+      }
+    },
     data: function () {
       return {
         goods: [],
-        seller: {},
         heightArr: [],
         scrollY: 0
       }
@@ -60,13 +70,24 @@
           }
         }
         return 0
+      },
+      selectFoods: function () {
+        let foods = []
+        this.goods.forEach((good) => {
+          good.foods.forEach((food) => {
+            if (food.count > 0) {
+              foods.push(food)
+            }
+          })
+        })
+        return foods
       }
     },
     mounted: function () {
       this.$http.get('../../data.json').then(function (res) {
         if (EERO_OK === res.body.errorno) {
           this.goods = res.body.goods
-          this.seller = res.body.seller
+          // this.seller = res.body.seller
           this.$nextTick(() => {
             this._calculateListHeight()
             this._initScroll()
@@ -80,6 +101,7 @@
           click: true
         })
         this.foodScroll = new BScroll(this.$refs.foodsWrapper, {
+          click: true,
           probeType: 3
         })
         this.foodScroll.on('scroll', (pos) => {
@@ -105,7 +127,9 @@
       }
     },
     components: {
-      supports
+      supports,
+      shopcart,
+      cartcontrol
     }
   }
 </script>
@@ -115,7 +139,7 @@
   #goods
     position absolute
     top 174px
-    bottom 64px
+    bottom 48px
     width 100%
     display flex
     overflow hidden
@@ -155,6 +179,7 @@
       font-size 12px
       .foods
         width 100%
+        position relative
         .foods-item
           width 100%
           .title
@@ -167,8 +192,8 @@
             background-color #f3f5f7
           .foods
             display flex
-            padding 18px 0
-            margin 0 18px
+            padding 18px
+            box-sizing border-box
             border-1px-bottom(rgba(7, 17, 27, .1))
             &:last-child
               border-none()
@@ -202,4 +227,8 @@
                   color rgb(147, 153, 159)
                   margin-left 8px
                   font-weight 700
+            .control-wrapper
+              position absolute
+              right 0px
+              bottom 6px
 </style>
